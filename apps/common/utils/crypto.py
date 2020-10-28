@@ -2,8 +2,26 @@ import base64
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from Crypto.Random import get_random_bytes
+from gmssl import sm2
 
 from django.conf import settings
+
+
+class GMSM2Crypto:
+    def __init__(self, public_key, private_key):
+        self.sm2_crypt = sm2.CryptSM2(
+            public_key=public_key, private_key=private_key
+        )
+
+    def encrypt(self, text):
+        return base64.urlsafe_b64encode(
+            self.sm2_crypt.encrypt(bytes(text, encoding='utf8'))
+        ).decode('utf8')
+
+    def decrypt(self, text):
+        return self.sm2_crypt.decrypt(
+            base64.urlsafe_b64decode(bytes(text, encoding='utf8'))
+        ).decode('utf8')
 
 
 class AESCrypto:
@@ -110,5 +128,13 @@ def get_aes_crypto(key=None, mode='GCM'):
     return a
 
 
+def get_gm_sm2_crypto():
+    return GMSM2Crypto(
+        public_key=settings.GM_SM2_PUBLIC_KEY,
+        private_key=settings.GM_SM2_PRIVATE_KEY
+    )
+
+
 aes_ecb_crypto = get_aes_crypto(mode='ECB')
 aes_crypto = get_aes_crypto(mode='GCM')
+gm_sm2_crypto = get_gm_sm2_crypto()

@@ -5,7 +5,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import force_text
 
-from ..utils import signer, aes_crypto, aes_ecb_crypto
+from ..utils import signer, aes_crypto, aes_ecb_crypto, gm_sm2_crypto
 
 
 __all__ = [
@@ -130,6 +130,12 @@ class EncryptMixin:
         except (TypeError, ValueError, UnicodeDecodeError):
             pass
 
+    def decrypt_from_gmsm2(self, value):
+        try:
+            return gm_sm2_crypto.decrypt(value)
+        except (TypeError, ValueError):
+            pass
+
     def from_db_value(self, value, expression, connection, context):
         if value is None:
             return value
@@ -141,6 +147,10 @@ class EncryptMixin:
         # 如果没有解开，使用原来的signer解密
         if not plain_value:
             plain_value = self.decrypt_from_signer(value)
+
+        # 如果没有解开，使用国密sm2解密
+        if not plain_value:
+            plain_value = self.decrypt_from_gmsm2(value)
 
         # 可能和Json mix，所以要先解密，再json
         sp = super()

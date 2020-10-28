@@ -125,6 +125,8 @@ class Config(dict):
         # Django Config, Must set before start
         'SECRET_KEY': '',
         'BOOTSTRAP_TOKEN': '',
+        'GM_SM2_PUBLIC_KEY': '',
+        'GM_SM2_PRIVATE_KEY': '',
         'DEBUG': False,
         'LOG_LEVEL': 'DEBUG',
         'LOG_DIR': os.path.join(PROJECT_DIR, 'logs'),
